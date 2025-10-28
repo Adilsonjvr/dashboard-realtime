@@ -56,6 +56,60 @@ npm run build
 npm run preview
 ```
 
+## 🚀 Deploy no Vercel
+
+### Opção 1: Deploy via CLI
+
+1. Instale o Vercel CLI:
+```bash
+npm install -g vercel
+```
+
+2. Faça login no Vercel:
+```bash
+vercel login
+```
+
+3. Deploy do projeto:
+```bash
+vercel
+```
+
+4. Deploy em produção:
+```bash
+vercel --prod
+```
+
+### Opção 2: Deploy via GitHub (Recomendado)
+
+1. Faça push do código para o GitHub:
+```bash
+git remote add origin https://github.com/seu-usuario/dashboard-realtime.git
+git push -u origin main
+```
+
+2. Acesse [vercel.com](https://vercel.com)
+3. Clique em "Import Project"
+4. Selecione seu repositório do GitHub
+5. Configurações serão detectadas automaticamente pelo `vercel.json`
+6. Clique em "Deploy"
+
+### Configurações do Vercel
+
+O projeto já está configurado com:
+- ✅ Build otimizado do Vite
+- ✅ Cache de assets estáticos
+- ✅ Rewrites para SPA
+- ✅ Framework detection automático
+
+### Variáveis de Ambiente (Opcional)
+
+Se precisar adicionar variáveis de ambiente no Vercel:
+
+1. Acesse seu projeto no dashboard do Vercel
+2. Vá em Settings > Environment Variables
+3. Adicione as variáveis necessárias
+
 ## 📁 Estrutura do Projeto
 
 ```
