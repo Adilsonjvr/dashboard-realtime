@@ -5,6 +5,7 @@ import { CurrencyData } from '../types'
 import Sidebar from './Sidebar'
 import CurrencyChart from './CurrencyChart'
 import FiatSelector from './FiatSelector'
+import CryptoIcon from './CryptoIcon'
 import { FIAT_CURRENCIES } from '../services/currencyWebSocket'
 
 interface DashboardProps {
@@ -147,28 +148,50 @@ const Dashboard = ({ currencies, isConnected, onReconnect, fiatCurrency, onChang
 
             {/* Top Gainer */}
             {topGainer && (
-              <div className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border border-emerald-500/20 rounded-2xl p-5 backdrop-blur-sm">
-                <div className="flex items-center gap-2 text-emerald-400 mb-2">
-                  <span className="text-xs font-medium uppercase tracking-wider">🚀 Top Gainer</span>
+              <motion.div
+                whileHover={{ scale: 1.02, y: -2 }}
+                className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border border-emerald-500/20 rounded-2xl p-5 backdrop-blur-sm overflow-hidden relative group cursor-pointer"
+              >
+                <div className="absolute top-2 right-2 opacity-20 group-hover:opacity-30 transition-opacity">
+                  <CryptoIcon symbol={topGainer.symbol} size={60} animate={false} />
                 </div>
-                <p className="text-2xl font-bold text-white">{topGainer.symbol}</p>
-                <p className="text-xs text-emerald-400 mt-1 font-semibold">
-                  +{topGainer.changePercent24h.toFixed(2)}%
-                </p>
-              </div>
+                <div className="relative z-10">
+                  <div className="flex items-center gap-2 text-emerald-400 mb-2">
+                    <span className="text-xs font-medium uppercase tracking-wider">🚀 Top Gainer</span>
+                  </div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <CryptoIcon symbol={topGainer.symbol} size={24} animate={false} />
+                    <p className="text-2xl font-bold text-white">{topGainer.symbol}</p>
+                  </div>
+                  <p className="text-xs text-emerald-400 font-semibold">
+                    +{topGainer.changePercent24h.toFixed(2)}%
+                  </p>
+                </div>
+              </motion.div>
             )}
 
             {/* Top Loser */}
             {topLoser && (
-              <div className="bg-gradient-to-br from-orange-500/10 to-orange-600/5 border border-orange-500/20 rounded-2xl p-5 backdrop-blur-sm">
-                <div className="flex items-center gap-2 text-orange-400 mb-2">
-                  <span className="text-xs font-medium uppercase tracking-wider">📉 Top Loser</span>
+              <motion.div
+                whileHover={{ scale: 1.02, y: -2 }}
+                className="bg-gradient-to-br from-orange-500/10 to-orange-600/5 border border-orange-500/20 rounded-2xl p-5 backdrop-blur-sm overflow-hidden relative group cursor-pointer"
+              >
+                <div className="absolute top-2 right-2 opacity-20 group-hover:opacity-30 transition-opacity">
+                  <CryptoIcon symbol={topLoser.symbol} size={60} animate={false} />
                 </div>
-                <p className="text-2xl font-bold text-white">{topLoser.symbol}</p>
-                <p className="text-xs text-orange-400 mt-1 font-semibold">
-                  {topLoser.changePercent24h.toFixed(2)}%
-                </p>
-              </div>
+                <div className="relative z-10">
+                  <div className="flex items-center gap-2 text-orange-400 mb-2">
+                    <span className="text-xs font-medium uppercase tracking-wider">📉 Top Loser</span>
+                  </div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <CryptoIcon symbol={topLoser.symbol} size={24} animate={false} />
+                    <p className="text-2xl font-bold text-white">{topLoser.symbol}</p>
+                  </div>
+                  <p className="text-xs text-orange-400 font-semibold">
+                    {topLoser.changePercent24h.toFixed(2)}%
+                  </p>
+                </div>
+              </motion.div>
             )}
           </motion.div>
 
@@ -182,16 +205,9 @@ const Dashboard = ({ currencies, isConnected, onReconnect, fiatCurrency, onChang
             >
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <div
-                      className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold"
-                      style={{
-                        backgroundColor: `${selectedCurrencyData.color}20`,
-                        color: selectedCurrencyData.color || '#fff'
-                      }}
-                    >
-                      {selectedCurrencyData.icon || selectedCurrencyData.symbol.charAt(0)}
-                    </div>
+                  <div className="flex items-center gap-4 mb-2">
+                    {/* Ícone SVG de alta qualidade com animação */}
+                    <CryptoIcon symbol={selectedCurrencyData.symbol} size={56} />
                     <div>
                       <h2 className="text-2xl font-bold text-white">
                         {selectedCurrencyData.name}

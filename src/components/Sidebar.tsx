@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { Search, TrendingUp, TrendingDown } from 'lucide-react'
 import { CurrencyData } from '../types'
 import { useState } from 'react'
+import CryptoIcon from './CryptoIcon'
 
 interface SidebarProps {
   currencies: CurrencyData[]
@@ -60,16 +61,13 @@ const Sidebar = ({ currencies, selectedSymbol, onSelectCurrency }: SidebarProps)
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-3">
-                    {/* Icon/Symbol */}
-                    <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold"
-                      style={{
-                        backgroundColor: `${currency.color}20`,
-                        color: currency.color || '#fff'
-                      }}
+                    {/* Icon SVG de alta qualidade */}
+                    <motion.div
+                      whileHover={{ scale: 1.1, rotate: [0, -10, 10, 0] }}
+                      transition={{ duration: 0.3 }}
                     >
-                      {currency.icon || currency.symbol.charAt(0)}
-                    </div>
+                      <CryptoIcon symbol={currency.symbol} size={40} animate={false} />
+                    </motion.div>
 
                     {/* Name & Symbol */}
                     <div>
