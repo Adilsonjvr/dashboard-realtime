@@ -25,6 +25,8 @@ export interface CurrencyData {
   high24h: number
   low24h: number
   volume24h: number
+  color?: string
+  icon?: string
 }
 
 export interface DashboardData {

@@ -1,188 +1,241 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Wifi, WifiOff, TrendingUp, DollarSign, BarChart3, RefreshCw } from 'lucide-react'
+import { Wifi, WifiOff, TrendingUp, BarChart3, RefreshCw, Activity } from 'lucide-react'
 import { CurrencyData } from '../types'
-import CurrencyCard from './CurrencyCard'
+import Sidebar from './Sidebar'
 import CurrencyChart from './CurrencyChart'
+import FiatSelector from './FiatSelector'
+import { FIAT_CURRENCIES } from '../services/currencyWebSocket'
 
 interface DashboardProps {
   currencies: CurrencyData[]
   isConnected: boolean
   onReconnect: () => void
+  fiatCurrency: string
+  onChangeFiatCurrency: (currency: string) => void
 }
 
-const Dashboard = ({ currencies, isConnected, onReconnect }: DashboardProps) => {
+const Dashboard = ({ currencies, isConnected, onReconnect, fiatCurrency, onChangeFiatCurrency }: DashboardProps) => {
   const [selectedCurrency, setSelectedCurrency] = useState<string | null>(null)
 
   const selectedCurrencyData = selectedCurrency
     ? currencies.find(c => c.symbol === selectedCurrency)
-    : currencies[0] // Default to first currency
+    : currencies[0]
+
+  const fiatSymbol = FIAT_CURRENCIES.find(f => f.code === fiatCurrency)?.symbol || '$'
 
   // Calcular estatísticas globais
   const totalMarketCap = currencies.reduce((sum, c) => sum + (c.currentPrice * c.volume24h), 0)
-  const averageChange = currencies.reduce((sum, c) => sum + c.changePercent24h, 0) / currencies.length
-  const gainers = currencies.filter(c => c.changePercent24h > 0).length
-  const losers = currencies.filter(c => c.changePercent24h < 0).length
+  const averageChange = currencies.length > 0
+    ? currencies.reduce((sum, c) => sum + c.changePercent24h, 0) / currencies.length
+    : 0
+  const topGainer = currencies.reduce((prev, current) =>
+    (current.changePercent24h > prev.changePercent24h) ? current : prev
+  , currencies[0])
+  const topLoser = currencies.reduce((prev, current) =>
+    (current.changePercent24h < prev.changePercent24h) ? current : prev
+  , currencies[0])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="flex h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      {/* Sidebar */}
+      <Sidebar
+        currencies={currencies}
+        selectedSymbol={selectedCurrency}
+        onSelectCurrency={setSelectedCurrency}
+      />
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <motion.div
+        <motion.header
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+          className="bg-slate-900/50 border-b border-slate-700/50 backdrop-blur-xl"
         >
-          <div>
-            <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
-              <DollarSign className="w-10 h-10 text-blue-500" />
-              Crypto Dashboard
-            </h1>
-            <p className="text-slate-400">Cotações em tempo real via Binance WebSocket</p>
-          </div>
+          <div className="px-8 py-4">
+            <div className="flex items-center justify-between">
+              {/* Title */}
+              <div>
+                <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+                  <Activity className="w-7 h-7 text-blue-500" />
+                  Crypto Tracker
+                </h1>
+                <p className="text-sm text-slate-400 mt-1">
+                  Monitoramento em tempo real • {currencies.length} moedas
+                </p>
+              </div>
 
-          {/* Connection Status */}
-          <div className="flex items-center gap-4">
-            <AnimatePresence mode="wait">
-              {isConnected ? (
-                <motion.div
-                  key="connected"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-500/20 border border-green-500/50 rounded-full"
-                >
-                  <Wifi className="w-5 h-5 text-green-400" />
-                  <span className="text-sm font-medium text-green-400">Conectado</span>
-                  <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="disconnected"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  className="flex items-center gap-2 px-4 py-2 bg-red-500/20 border border-red-500/50 rounded-full"
-                >
-                  <WifiOff className="w-5 h-5 text-red-400" />
-                  <span className="text-sm font-medium text-red-400">Desconectado</span>
-                  <button
-                    onClick={onReconnect}
-                    className="ml-2 p-1 hover:bg-red-500/30 rounded-full transition-colors"
-                  >
-                    <RefreshCw className="w-4 h-4 text-red-400" />
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </motion.div>
+              {/* Controls */}
+              <div className="flex items-center gap-4">
+                {/* Fiat Selector */}
+                <FiatSelector
+                  selectedFiat={fiatCurrency}
+                  onChangeFiat={onChangeFiatCurrency}
+                />
 
-        {/* Global Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="grid grid-cols-1 md:grid-cols-4 gap-4"
-        >
-          <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
-            <div className="flex items-center gap-2 text-slate-400 mb-2">
-              <BarChart3 className="w-4 h-4" />
-              <span className="text-sm">Market Cap</span>
+                {/* Connection Status */}
+                <AnimatePresence mode="wait">
+                  {isConnected ? (
+                    <motion.div
+                      key="connected"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      className="flex items-center gap-2 px-4 py-2.5 bg-green-500/10 border border-green-500/30 rounded-xl"
+                    >
+                      <Wifi className="w-4 h-4 text-green-400" />
+                      <span className="text-sm font-medium text-green-400">Live</span>
+                      <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="disconnected"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      className="flex items-center gap-2 px-4 py-2.5 bg-red-500/10 border border-red-500/30 rounded-xl"
+                    >
+                      <WifiOff className="w-4 h-4 text-red-400" />
+                      <span className="text-sm font-medium text-red-400">Offline</span>
+                      <button
+                        onClick={onReconnect}
+                        className="ml-1 p-1 hover:bg-red-500/20 rounded-full transition-colors"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5 text-red-400" />
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
-            <p className="text-2xl font-bold text-white">
-              ${(totalMarketCap / 1e9).toFixed(2)}B
-            </p>
           </div>
+        </motion.header>
 
-          <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
-            <div className="flex items-center gap-2 text-slate-400 mb-2">
-              <TrendingUp className="w-4 h-4" />
-              <span className="text-sm">Avg Change</span>
-            </div>
-            <p className={`text-2xl font-bold ${averageChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-              {averageChange >= 0 ? '+' : ''}{averageChange.toFixed(2)}%
-            </p>
-          </div>
-
-          <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
-            <div className="flex items-center gap-2 text-slate-400 mb-2">
-              <span className="text-sm">🚀 Gainers</span>
-            </div>
-            <p className="text-2xl font-bold text-green-400">{gainers}</p>
-          </div>
-
-          <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
-            <div className="flex items-center gap-2 text-slate-400 mb-2">
-              <span className="text-sm">📉 Losers</span>
-            </div>
-            <p className="text-2xl font-bold text-red-400">{losers}</p>
-          </div>
-        </motion.div>
-
-        {/* Main Chart */}
-        {selectedCurrencyData && selectedCurrencyData.priceHistory.length > 0 && (
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-8 space-y-6">
+          {/* Global Stats */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6"
+            transition={{ delay: 0.1 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
           >
-            <div className="mb-4">
-              <h2 className="text-2xl font-bold text-white mb-1">
-                {selectedCurrencyData.name} Price Chart
-              </h2>
-              <p className="text-slate-400 text-sm">Últimos dados em tempo real</p>
+            {/* Market Cap */}
+            <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border border-blue-500/20 rounded-2xl p-5 backdrop-blur-sm">
+              <div className="flex items-center gap-2 text-blue-400 mb-2">
+                <BarChart3 className="w-4 h-4" />
+                <span className="text-xs font-medium uppercase tracking-wider">Market Cap</span>
+              </div>
+              <p className="text-2xl font-bold text-white">
+                {fiatSymbol}{(totalMarketCap / 1e9).toFixed(2)}B
+              </p>
+              <p className="text-xs text-slate-400 mt-1">Volume total</p>
             </div>
-            <div className="h-[400px]">
-              <CurrencyChart currency={selectedCurrencyData} />
+
+            {/* Average Change */}
+            <div className={`bg-gradient-to-br ${averageChange >= 0 ? 'from-green-500/10 to-green-600/5 border-green-500/20' : 'from-red-500/10 to-red-600/5 border-red-500/20'} border rounded-2xl p-5 backdrop-blur-sm`}>
+              <div className={`flex items-center gap-2 ${averageChange >= 0 ? 'text-green-400' : 'text-red-400'} mb-2`}>
+                <TrendingUp className="w-4 h-4" />
+                <span className="text-xs font-medium uppercase tracking-wider">Média 24h</span>
+              </div>
+              <p className={`text-2xl font-bold ${averageChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                {averageChange >= 0 ? '+' : ''}{averageChange.toFixed(2)}%
+              </p>
+              <p className="text-xs text-slate-400 mt-1">Variação média</p>
             </div>
-          </motion.div>
-        )}
 
-        {/* Currency Cards Grid */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-        >
-          <h2 className="text-2xl font-bold text-white mb-4">Moedas</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <AnimatePresence>
-              {currencies.map((currency, index) => (
-                <motion.div
-                  key={currency.symbol}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.05 * index }}
-                >
-                  <CurrencyCard
-                    currency={currency}
-                    isSelected={selectedCurrency === currency.symbol}
-                    onClick={() => setSelectedCurrency(currency.symbol)}
-                  />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-        </motion.div>
+            {/* Top Gainer */}
+            {topGainer && (
+              <div className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border border-emerald-500/20 rounded-2xl p-5 backdrop-blur-sm">
+                <div className="flex items-center gap-2 text-emerald-400 mb-2">
+                  <span className="text-xs font-medium uppercase tracking-wider">🚀 Top Gainer</span>
+                </div>
+                <p className="text-2xl font-bold text-white">{topGainer.symbol}</p>
+                <p className="text-xs text-emerald-400 mt-1 font-semibold">
+                  +{topGainer.changePercent24h.toFixed(2)}%
+                </p>
+              </div>
+            )}
 
-        {/* No Data Message */}
-        {currencies.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex flex-col items-center justify-center py-20 text-center"
-          >
-            <BarChart3 className="w-16 h-16 text-slate-600 mb-4" />
-            <h3 className="text-xl font-semibold text-slate-400 mb-2">
-              Aguardando dados...
-            </h3>
-            <p className="text-slate-500">
-              Conectando ao WebSocket da Binance
-            </p>
+            {/* Top Loser */}
+            {topLoser && (
+              <div className="bg-gradient-to-br from-orange-500/10 to-orange-600/5 border border-orange-500/20 rounded-2xl p-5 backdrop-blur-sm">
+                <div className="flex items-center gap-2 text-orange-400 mb-2">
+                  <span className="text-xs font-medium uppercase tracking-wider">📉 Top Loser</span>
+                </div>
+                <p className="text-2xl font-bold text-white">{topLoser.symbol}</p>
+                <p className="text-xs text-orange-400 mt-1 font-semibold">
+                  {topLoser.changePercent24h.toFixed(2)}%
+                </p>
+              </div>
+            )}
           </motion.div>
-        )}
+
+          {/* Main Chart */}
+          {selectedCurrencyData && selectedCurrencyData.priceHistory.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-slate-900/50 border border-slate-700/50 rounded-2xl p-6 backdrop-blur-sm"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <div className="flex items-center gap-3 mb-2">
+                    <div
+                      className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold"
+                      style={{
+                        backgroundColor: `${selectedCurrencyData.color}20`,
+                        color: selectedCurrencyData.color || '#fff'
+                      }}
+                    >
+                      {selectedCurrencyData.icon || selectedCurrencyData.symbol.charAt(0)}
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold text-white">
+                        {selectedCurrencyData.name}
+                      </h2>
+                      <p className="text-sm text-slate-400">{selectedCurrencyData.symbol}/{fiatCurrency}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-3xl font-bold text-white mb-1">
+                    {fiatSymbol}{selectedCurrencyData.currentPrice.toLocaleString('en-US', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    })}
+                  </div>
+                  <div className={`text-sm font-semibold ${selectedCurrencyData.changePercent24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    {selectedCurrencyData.changePercent24h >= 0 ? '+' : ''}
+                    {selectedCurrencyData.changePercent24h.toFixed(2)}% (24h)
+                  </div>
+                </div>
+              </div>
+              <div className="h-[400px]">
+                <CurrencyChart currency={selectedCurrencyData} />
+              </div>
+            </motion.div>
+          )}
+
+          {/* No Data Message */}
+          {currencies.length === 0 && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex flex-col items-center justify-center py-20 text-center"
+            >
+              <BarChart3 className="w-16 h-16 text-slate-600 mb-4" />
+              <h3 className="text-xl font-semibold text-slate-400 mb-2">
+                Aguardando dados...
+              </h3>
+              <p className="text-slate-500">
+                Conectando ao WebSocket da Binance
+              </p>
+            </motion.div>
+          )}
+        </div>
       </div>
     </div>
   )

@@ -5,6 +5,7 @@ import { CurrencyWebSocketService } from '../services/currencyWebSocket'
 export const useCurrencyData = () => {
   const [currencies, setCurrencies] = useState<Map<string, CurrencyData>>(new Map())
   const [isConnected, setIsConnected] = useState(false)
+  const [fiatCurrency, setFiatCurrency] = useState('USD')
   const serviceRef = useRef<CurrencyWebSocketService | null>(null)
 
   useEffect(() => {
@@ -29,9 +30,16 @@ export const useCurrencyData = () => {
     }
   }, [])
 
+  const changeFiatCurrency = (currency: string) => {
+    setFiatCurrency(currency)
+    serviceRef.current?.setFiatCurrency(currency)
+  }
+
   return {
     currencies: Array.from(currencies.values()),
     isConnected,
+    fiatCurrency,
+    changeFiatCurrency,
     reconnect: () => serviceRef.current?.connect(),
     disconnect: () => serviceRef.current?.disconnect()
   }
