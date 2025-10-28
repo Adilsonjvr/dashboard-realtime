@@ -1,15 +1,10 @@
-import { useState, useEffect } from 'react'
 import Dashboard from './components/Dashboard'
-import { useRealtimeData } from './hooks/useRealtimeData'
+import { useCurrencyData } from './hooks/useCurrencyData'
 
 function App() {
-  const { data, isConnected } = useRealtimeData()
+  const { currencies, isConnected, reconnect } = useCurrencyData()
 
-  return (
-    <div className="min-h-screen bg-slate-900">
-      <Dashboard data={data} isConnected={isConnected} />
-    </div>
-  )
+  return <Dashboard currencies={currencies} isConnected={isConnected} onReconnect={reconnect} />
 }
 
 export default App
