@@ -77,7 +77,9 @@ const CurrencyChart = ({ currency }: CurrencyChartProps) => {
         displayColors: false,
         callbacks: {
           label: (context) => {
-            return `$${context.parsed.y.toLocaleString('en-US', {
+            const value = context.parsed.y
+            if (value === null) return ''
+            return `$${value.toLocaleString('en-US', {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2
             })}`
