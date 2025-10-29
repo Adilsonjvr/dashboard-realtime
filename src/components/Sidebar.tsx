@@ -3,6 +3,7 @@ import { Search, TrendingUp, TrendingDown } from 'lucide-react'
 import { CurrencyData } from '../types'
 import { useState } from 'react'
 import CryptoIcon from './CryptoIcon'
+import { useDebounce } from '../hooks/useDebounce'
 
 interface SidebarProps {
   currencies: CurrencyData[]
@@ -12,10 +13,11 @@ interface SidebarProps {
 
 const Sidebar = ({ currencies, selectedSymbol, onSelectCurrency }: SidebarProps) => {
   const [searchTerm, setSearchTerm] = useState('')
+  const debouncedSearchTerm = useDebounce(searchTerm, 300)
 
   const filteredCurrencies = currencies.filter(c =>
-    c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.symbol.toLowerCase().includes(searchTerm.toLowerCase())
+    c.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+    c.symbol.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
   )
 
   return (

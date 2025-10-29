@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Wifi, WifiOff, TrendingUp, BarChart3, RefreshCw, Activity, Menu } from 'lucide-react'
+import { Wifi, WifiOff, TrendingUp, TrendingDown, BarChart3, RefreshCw, Activity, Menu, ArrowUp, ArrowDown } from 'lucide-react'
 import { CurrencyData } from '../types'
 import Sidebar from './Sidebar'
 import CurrencyChart from './CurrencyChart'
@@ -188,12 +188,19 @@ const Dashboard = ({ currencies, isConnected, onReconnect, fiatCurrency, onChang
             {/* Average Change */}
             <div className={`bg-gradient-to-br ${averageChange >= 0 ? 'from-green-500/10 to-green-600/5 border-green-500/20' : 'from-red-500/10 to-red-600/5 border-red-500/20'} border rounded-xl md:rounded-2xl p-3 md:p-5 backdrop-blur-sm`}>
               <div className={`flex items-center gap-1 md:gap-2 ${averageChange >= 0 ? 'text-green-400' : 'text-red-400'} mb-1 md:mb-2`}>
-                <TrendingUp className="w-3 h-3 md:w-4 md:h-4" />
+                {averageChange >= 0 ? <TrendingUp className="w-3 h-3 md:w-4 md:h-4" /> : <TrendingDown className="w-3 h-3 md:w-4 md:h-4" />}
                 <span className="text-[10px] md:text-xs font-medium uppercase tracking-wider">Média 24h</span>
               </div>
-              <p className={`text-base md:text-2xl font-bold ${averageChange >= 0 ? 'text-green-400' : 'text-red-400'} truncate`}>
-                {averageChange >= 0 ? '+' : ''}{averageChange.toFixed(2)}%
-              </p>
+              <div className="flex items-center gap-1 md:gap-2">
+                {averageChange >= 0 ? (
+                  <ArrowUp className="w-4 h-4 md:w-5 md:h-5 text-green-400 animate-bounce" />
+                ) : (
+                  <ArrowDown className="w-4 h-4 md:w-5 md:h-5 text-red-400 animate-bounce" />
+                )}
+                <p className={`text-base md:text-2xl font-bold ${averageChange >= 0 ? 'text-green-400' : 'text-red-400'} truncate`}>
+                  {averageChange >= 0 ? '+' : ''}{averageChange.toFixed(2)}%
+                </p>
+              </div>
               <p className="text-[10px] md:text-xs text-slate-400 mt-0.5 md:mt-1">Variação média</p>
             </div>
 
@@ -208,15 +215,19 @@ const Dashboard = ({ currencies, isConnected, onReconnect, fiatCurrency, onChang
                 </div>
                 <div className="relative z-10">
                   <div className="flex items-center gap-1 md:gap-2 text-emerald-400 mb-1 md:mb-2">
-                    <span className="text-[10px] md:text-xs font-medium uppercase tracking-wider">🚀 Gainer</span>
+                    <ArrowUp className="w-3 h-3 md:w-4 md:h-4 animate-bounce" />
+                    <span className="text-[10px] md:text-xs font-medium uppercase tracking-wider">Gainer</span>
                   </div>
                   <div className="flex items-center gap-1 md:gap-2 mb-0.5 md:mb-1">
                     <CryptoIcon symbol={topGainer.symbol} size={20} animate={false} className="md:w-6 md:h-6" />
                     <p className="text-base md:text-2xl font-bold text-white truncate">{topGainer.symbol}</p>
                   </div>
-                  <p className="text-[10px] md:text-xs text-emerald-400 font-semibold truncate">
-                    +{topGainer.changePercent24h.toFixed(2)}%
-                  </p>
+                  <div className="flex items-center gap-1">
+                    <TrendingUp className="w-3 h-3 md:w-4 md:h-4 text-emerald-400" />
+                    <p className="text-[10px] md:text-xs text-emerald-400 font-semibold truncate">
+                      +{topGainer.changePercent24h.toFixed(2)}%
+                    </p>
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -232,15 +243,19 @@ const Dashboard = ({ currencies, isConnected, onReconnect, fiatCurrency, onChang
                 </div>
                 <div className="relative z-10">
                   <div className="flex items-center gap-1 md:gap-2 text-orange-400 mb-1 md:mb-2">
-                    <span className="text-[10px] md:text-xs font-medium uppercase tracking-wider">📉 Loser</span>
+                    <ArrowDown className="w-3 h-3 md:w-4 md:h-4 animate-bounce" />
+                    <span className="text-[10px] md:text-xs font-medium uppercase tracking-wider">Loser</span>
                   </div>
                   <div className="flex items-center gap-1 md:gap-2 mb-0.5 md:mb-1">
                     <CryptoIcon symbol={topLoser.symbol} size={20} animate={false} className="md:w-6 md:h-6" />
                     <p className="text-base md:text-2xl font-bold text-white truncate">{topLoser.symbol}</p>
                   </div>
-                  <p className="text-[10px] md:text-xs text-orange-400 font-semibold truncate">
-                    {topLoser.changePercent24h.toFixed(2)}%
-                  </p>
+                  <div className="flex items-center gap-1">
+                    <TrendingDown className="w-3 h-3 md:w-4 md:h-4 text-orange-400" />
+                    <p className="text-[10px] md:text-xs text-orange-400 font-semibold truncate">
+                      {topLoser.changePercent24h.toFixed(2)}%
+                    </p>
+                  </div>
                 </div>
               </motion.div>
             )}
