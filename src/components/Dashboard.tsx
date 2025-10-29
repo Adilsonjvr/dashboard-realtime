@@ -15,9 +15,10 @@ interface DashboardProps {
   onReconnect: () => void
   fiatCurrency: string
   onChangeFiatCurrency: (currency: string) => void
+  onReorderCurrencies: (currencies: CurrencyData[]) => void
 }
 
-const Dashboard = ({ currencies, isConnected, onReconnect, fiatCurrency, onChangeFiatCurrency }: DashboardProps) => {
+const Dashboard = ({ currencies, isConnected, onReconnect, fiatCurrency, onChangeFiatCurrency, onReorderCurrencies }: DashboardProps) => {
   const [selectedCurrency, setSelectedCurrency] = useState<string | null>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('24h')
@@ -48,6 +49,7 @@ const Dashboard = ({ currencies, isConnected, onReconnect, fiatCurrency, onChang
           currencies={currencies}
           selectedSymbol={selectedCurrency}
           onSelectCurrency={setSelectedCurrency}
+          onReorderCurrencies={onReorderCurrencies}
         />
       </div>
 
@@ -79,6 +81,7 @@ const Dashboard = ({ currencies, isConnected, onReconnect, fiatCurrency, onChang
                   setSelectedCurrency(symbol)
                   setIsSidebarOpen(false)
                 }}
+                onReorderCurrencies={onReorderCurrencies}
               />
             </motion.div>
           </>

@@ -2,7 +2,7 @@ import Dashboard from './components/Dashboard'
 import { useCurrencyData } from './hooks/useCurrencyData'
 
 function App() {
-  const { currencies, isConnected, fiatCurrency, changeFiatCurrency, reconnect } = useCurrencyData()
+  const { currencies, isConnected, fiatCurrency, changeFiatCurrency, reorderCurrencies, reconnect } = useCurrencyData()
 
   return (
     <Dashboard
@@ -11,6 +11,7 @@ function App() {
       onReconnect={reconnect}
       fiatCurrency={fiatCurrency}
       onChangeFiatCurrency={changeFiatCurrency}
+      onReorderCurrencies={reorderCurrencies}
     />
   )
 }
