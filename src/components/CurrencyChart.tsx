@@ -11,11 +11,12 @@ import {
   Legend,
   ChartOptions
 } from 'chart.js'
+import zoomPlugin from 'chartjs-plugin-zoom'
 import { Line } from 'react-chartjs-2'
 import { CurrencyData } from '../types'
 import { format } from 'date-fns'
 
-// Registrar componentes do Chart.js
+// Registrar componentes do Chart.js incluindo zoom
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -24,7 +25,8 @@ ChartJS.register(
   Title,
   Tooltip,
   Filler,
-  Legend
+  Legend,
+  zoomPlugin
 )
 
 interface CurrencyChartProps {
@@ -68,22 +70,60 @@ const CurrencyChart = ({ currency }: CurrencyChartProps) => {
         display: false,
       },
       tooltip: {
-        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+        backgroundColor: 'rgba(15, 23, 42, 0.95)',
         titleColor: '#fff',
         bodyColor: '#fff',
         borderColor: currency.changePercent24h >= 0 ? 'rgb(34, 197, 94)' : 'rgb(239, 68, 68)',
-        borderWidth: 1,
-        padding: 12,
+        borderWidth: 2,
+        padding: 16,
         displayColors: false,
+        titleFont: {
+          size: 14,
+          weight: 'bold'
+        },
+        bodyFont: {
+          size: 13
+        },
+        bodySpacing: 6,
         callbacks: {
+          title: (context) => {
+            const index = context[0].dataIndex
+            const timestamp = currency.priceHistory[index]?.timestamp
+            if (!timestamp) return ''
+            return format(timestamp, 'dd/MM/yyyy HH:mm:ss')
+          },
           label: (context) => {
             const value = context.parsed.y
             if (value === null) return ''
-            return `$${value.toLocaleString('en-US', {
+            return `Preço: $${value.toLocaleString('en-US', {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2
             })}`
+          },
+          afterLabel: () => {
+            return [
+              `Máx 24h: $${currency.high24h.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+              `Mín 24h: $${currency.low24h.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+              `Volume 24h: $${(currency.volume24h * currency.currentPrice).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
+            ]
           }
+        }
+      },
+      zoom: {
+        pan: {
+          enabled: true,
+          mode: 'x',
+          modifierKey: 'ctrl',
+        },
+        zoom: {
+          wheel: {
+            enabled: true,
+            modifierKey: 'ctrl',
+          },
+          pinch: {
+            enabled: true
+          },
+          mode: 'x',
         }
       }
     },

@@ -6,6 +6,7 @@ import Sidebar from './Sidebar'
 import CurrencyChart from './CurrencyChart'
 import FiatSelector from './FiatSelector'
 import CryptoIcon from './CryptoIcon'
+import PeriodSelector, { TimePeriod } from './PeriodSelector'
 import { FIAT_CURRENCIES } from '../services/currencyWebSocket'
 
 interface DashboardProps {
@@ -19,6 +20,7 @@ interface DashboardProps {
 const Dashboard = ({ currencies, isConnected, onReconnect, fiatCurrency, onChangeFiatCurrency }: DashboardProps) => {
   const [selectedCurrency, setSelectedCurrency] = useState<string | null>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('24h')
 
   const selectedCurrencyData = selectedCurrency
     ? currencies.find(c => c.symbol === selectedCurrency)
@@ -252,37 +254,87 @@ const Dashboard = ({ currencies, isConnected, onReconnect, fiatCurrency, onChang
               transition={{ delay: 0.2 }}
               className="bg-slate-900/50 border border-slate-700/50 rounded-xl md:rounded-2xl p-4 md:p-6 backdrop-blur-sm"
             >
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4 mb-4 md:mb-6">
-                {/* Info da Moeda */}
-                <div className="flex items-center gap-2 md:gap-4">
-                  {/* Ícone SVG */}
-                  <CryptoIcon symbol={selectedCurrencyData.symbol} size={40} className="md:w-14 md:h-14 flex-shrink-0" />
-                  <div className="min-w-0">
-                    <h2 className="text-lg md:text-2xl font-bold text-white truncate">
-                      {selectedCurrencyData.name}
-                    </h2>
-                    <p className="text-xs md:text-sm text-slate-400">{selectedCurrencyData.symbol}/{fiatCurrency}</p>
+              <div className="flex flex-col gap-3 md:gap-4 mb-4 md:mb-6">
+                {/* Linha 1: Info + Preço */}
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                  {/* Info da Moeda */}
+                  <div className="flex items-center gap-2 md:gap-4">
+                    {/* Ícone SVG */}
+                    <CryptoIcon symbol={selectedCurrencyData.symbol} size={40} className="md:w-14 md:h-14 flex-shrink-0" />
+                    <div className="min-w-0">
+                      <h2 className="text-lg md:text-2xl font-bold text-white truncate">
+                        {selectedCurrencyData.name}
+                      </h2>
+                      <p className="text-xs md:text-sm text-slate-400">{selectedCurrencyData.symbol}/{fiatCurrency}</p>
+                    </div>
+                  </div>
+
+                  {/* Preço e Variação */}
+                  <div className="flex items-baseline gap-3 md:text-right">
+                    <div className="text-xl md:text-3xl font-bold text-white">
+                      {fiatSymbol}{selectedCurrencyData.currentPrice.toLocaleString('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                      })}
+                    </div>
+                    <div className={`text-xs md:text-sm font-semibold ${selectedCurrencyData.changePercent24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {selectedCurrencyData.changePercent24h >= 0 ? '+' : ''}
+                      {selectedCurrencyData.changePercent24h.toFixed(2)}%
+                    </div>
                   </div>
                 </div>
 
-                {/* Preço e Variação */}
-                <div className="flex items-baseline gap-3 md:text-right">
-                  <div className="text-xl md:text-3xl font-bold text-white">
-                    {fiatSymbol}{selectedCurrencyData.currentPrice.toLocaleString('en-US', {
+                {/* Linha 2: Seletor de Período */}
+                <div className="flex justify-center md:justify-start">
+                  <PeriodSelector
+                    selectedPeriod={selectedPeriod}
+                    onChangePeriod={setSelectedPeriod}
+                  />
+                </div>
+              </div>
+
+              {/* Stats detalhadas */}
+              <div className="grid grid-cols-3 gap-2 md:gap-4 mb-4 md:mb-6">
+                {/* Volume 24h */}
+                <div className="bg-slate-800/40 border border-slate-700/40 rounded-lg md:rounded-xl p-2 md:p-4">
+                  <p className="text-[10px] md:text-xs text-slate-400 mb-1">Volume 24h</p>
+                  <p className="text-xs md:text-lg font-bold text-white truncate">
+                    {fiatSymbol}{(selectedCurrencyData.volume24h * selectedCurrencyData.currentPrice).toLocaleString('en-US', {
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0
+                    })}
+                  </p>
+                </div>
+
+                {/* Máxima 24h */}
+                <div className="bg-green-500/10 border border-green-500/30 rounded-lg md:rounded-xl p-2 md:p-4">
+                  <p className="text-[10px] md:text-xs text-green-400 mb-1">Máx 24h</p>
+                  <p className="text-xs md:text-lg font-bold text-green-400 truncate">
+                    {fiatSymbol}{selectedCurrencyData.high24h.toLocaleString('en-US', {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2
                     })}
-                  </div>
-                  <div className={`text-xs md:text-sm font-semibold ${selectedCurrencyData.changePercent24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                    {selectedCurrencyData.changePercent24h >= 0 ? '+' : ''}
-                    {selectedCurrencyData.changePercent24h.toFixed(2)}%
-                  </div>
+                  </p>
+                </div>
+
+                {/* Mínima 24h */}
+                <div className="bg-red-500/10 border border-red-500/30 rounded-lg md:rounded-xl p-2 md:p-4">
+                  <p className="text-[10px] md:text-xs text-red-400 mb-1">Mín 24h</p>
+                  <p className="text-xs md:text-lg font-bold text-red-400 truncate">
+                    {fiatSymbol}{selectedCurrencyData.low24h.toLocaleString('en-US', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    })}
+                  </p>
                 </div>
               </div>
 
               {/* Gráfico */}
-              <div className="h-[250px] md:h-[400px]">
+              <div className="h-[250px] md:h-[400px] relative">
                 <CurrencyChart currency={selectedCurrencyData} />
+                <p className="text-[10px] md:text-xs text-slate-500 text-center mt-2">
+                  💡 Dica: Use Ctrl + Scroll para zoom, Ctrl + Arraste para mover
+                </p>
               </div>
             </motion.div>
           )}
