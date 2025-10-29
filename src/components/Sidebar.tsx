@@ -69,16 +69,16 @@ const SortableCurrencyItem = ({ currency, isSelected, onSelect }: SortableCurren
           ${isDragging ? 'cursor-grabbing' : 'cursor-pointer'}
         `}
       >
-        {/* Drag Handle */}
+        {/* Drag Handle - sempre visível em mobile */}
         <div
           {...attributes}
           {...listeners}
-          className="absolute left-1 top-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 hover:opacity-100 transition-opacity"
+          className="absolute left-0.5 md:left-1 top-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing opacity-30 md:opacity-0 md:group-hover:opacity-100 hover:opacity-100 transition-opacity touch-none"
         >
-          <GripVertical className="w-4 h-4 text-slate-500 hover:text-slate-300" />
+          <GripVertical className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-500 hover:text-slate-300" />
         </div>
 
-        <div className="flex items-center justify-between mb-1.5 md:mb-2 pl-6">
+        <div className="flex items-center justify-between mb-1.5 md:mb-2 pl-5 md:pl-6">
           <div className="flex items-center gap-2 md:gap-3">
             {/* Icon SVG de alta qualidade */}
             <motion.div
@@ -113,7 +113,7 @@ const SortableCurrencyItem = ({ currency, isSelected, onSelect }: SortableCurren
         </div>
 
         {/* Price */}
-        <div className="text-white font-bold text-base md:text-lg pl-6">
+        <div className="text-white font-bold text-base md:text-lg pl-5 md:pl-6">
           ${currency.currentPrice.toLocaleString('en-US', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
